@@ -8,6 +8,7 @@ def loadFile():
     filenameInput.delete(0, END)
     if len(filename) > 0:
         try:
+            parser.ClearData()
             parser.SetFilename(filename)
             messagebox.showinfo("Uspjeh!", "Datoteka učitana!")
             loadedFileLabel.config(text = filename, foreground="red")
@@ -17,7 +18,11 @@ def loadFile():
     else:
         messagebox.showwarning("Greška", "Unesite naziv datoteke!")
 
+def clearTable():
+    dataTable.delete(*dataTable.get_children())
+
 def fillDataTable():
+    clearTable()
     dataTable["column"] = list(parser.DataFrame.columns)
     dataTable["show"] = "headings"
     for column in dataTable["columns"]:

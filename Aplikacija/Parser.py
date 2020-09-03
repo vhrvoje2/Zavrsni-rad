@@ -39,6 +39,11 @@ class Parser():
     def CreateDataFrame(self):
         self.DataFrame = pd.DataFrame(self.dataFrameList, columns=header)
 
+    def ClearData(self):
+        self.rawData = list()
+        self.parsedData = list()
+        self.dataFrameList = list()
+        self.DataFrame = None
 #TEST
 if __name__ == "__main__":
     mojParser = Parser()
