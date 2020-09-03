@@ -27,7 +27,7 @@ class Parser():
             self.rawData = file.readlines()
 
     def ParseData(self):      
-        for x in range(len(self.rawData)-1):
+        for x in range(len(self.rawData)):
             line = self.rawData[x].replace("\n", "")
             self.parsedData.append(line)
 
@@ -39,5 +39,10 @@ class Parser():
     def CreateDataFrame(self):
         self.DataFrame = pd.DataFrame(self.dataFrameList, columns=header)
 
-""" mojParser = Parser("test-log.txt")
-print(mojParser.DataFrame.head(2)) """
+#TEST
+if __name__ == "__main__":
+    mojParser = Parser()
+    mojParser.SetFilename("access-log.txt")
+    df = mojParser.DataFrame.drop(columns=["IP klijenta", "ID korisnika", "Korisničko ime", "Datum i vrijeme", "Metoda i sadržaj", "Veličina u bajtovima", "Referrer", "Korisnički agent"])
+    df = df.groupby(by="HTTP kod odgovora").size()
+    print(df)
