@@ -33,10 +33,20 @@ def FillDataTable(dataFrame):
     for row in dataFrameRows:
         dataTable.insert("", "end", values=row)
 
-def SearchData():
+def SearchAndFilter():
     term = searchInput.get()
-    if len(term) > 0 and len(parser.dataFrameList) > 0:
-        parser.SearchDataFrame(term)
+    checkboxList = [varClientIP.get(),
+                    varClientID.get(),
+                    varUsername.get(),
+                    varDate.get(),
+                    varContent.get(),
+                    varHTTP.get(),
+                    varBytes.get(),
+                    varRef.get(),
+                    varAgent.get()]
+                    
+    if len(parser.dataFrameList) > 0:
+        parser.SearchAndFilter(term, checkboxList)
         FillDataTable(parser.ModifiedDataFrame)
 
 def DisplayStatistics():
@@ -63,7 +73,7 @@ def DisplayGraph():
         parser.DisplayGraph(graphValues[graphsCombobox.get()])
         window.quit()
 
-def FilterData():
+""" def FilterData():
     checkboxList = [varClientIP.get(),
                     varClientID.get(),
                     varUsername.get(),
@@ -75,13 +85,29 @@ def FilterData():
                     varAgent.get()]
     
     newDataFrame = parser.FilterColumns(checkboxList)
-    FillDataTable(newDataFrame)
+    FillDataTable(newDataFrame) """
 
 def SaveData():
     if len(parser.ModifiedDataFrame) > 0:
         path = filedialog.asksaveasfilename(defaultextension='.csv')
         parser.SaveDataFrameAsCSV(parser.ModifiedDataFrame, path)
         messagebox.showinfo("Uspjeh!", "Datoteka uspješno kreirana!")
+
+def ResetUI():
+    FillDataTable(parser.DataFrame)
+    ResetCheckboxes()
+    searchInput.delete(0, END)
+
+def ResetCheckboxes():
+    clientIPCheckbox.select()
+    clientIDCheckbox.select()
+    usernameCheckbox.select() 
+    dateCheckbox.select() 
+    contentCheckbox.select()
+    httpCheckbox.select() 
+    bytesCheckbox.select()
+    refCheckbox.select() 
+    agentCheckbox.select()
 
 #------------------------------------------------parser------------------------------------------------
 parser = Parser()
@@ -119,7 +145,7 @@ varAgent = IntVar()
 checkboxesFrame = LabelFrame(window, text="Odabir polja:", height=120, width=600, borderwidth=2, relief="groove")
 checkboxesFrame.place(x=205, y=0)
 
-refreshButton = Button(window, text="Osvježi prikaz", command=FilterData)
+refreshButton = Button(window, text="Osvježi prikaz", command=SearchAndFilter)
 refreshButton.place(x=310, y=100)
 
 clientIPCheckbox = Checkbutton(checkboxesFrame, text="IP klijenta", variable=varClientIP)
@@ -165,8 +191,12 @@ searchLabel.place(x=10, y=330)
 searchInput = Entry(window, width=20, highlightcolor="red", highlightthickness=1)
 searchInput.place(x=65, y=330)
 
-searchButton = Button(window, text="Pretraži", command=SearchData)
+searchButton = Button(window, text="Pretraži", command=SearchAndFilter)
 searchButton.place(x=200, y=327)
+
+#-------------------------------------------------reset------------------------------------------------
+resetButton = Button(window, text="Resetiraj sve", command=ResetUI)
+resetButton.place(x=255, y=327)
 
 #-----------------------------------------------datatable----------------------------------------------
 dataFrame = LabelFrame(window, text="Sadržaj datoteke:")

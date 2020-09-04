@@ -47,10 +47,17 @@ class Parser():
         self.DataFrame = None
         self.ModifiedDataFrame = None
 
-    def SearchDataFrame(self, term):
+    def SearchAndFilter(self, term, checkboxList):
         df = self.DataFrame
         self.ModifiedDataFrame = df.loc[(df["IP klijenta"].str.contains(term)) | (df["ID korisnika"].str.contains(term)) | (df["Korisničko ime"].str.contains(term)) | (df["Datum i vrijeme"].str.contains(term)) | (df["Metoda i sadržaj"].str.contains(term)) | (df["Veličina u bajtovima"].str.contains(term)) | (df["Referrer"].str.contains(term)) | (df["Korisnički agent"].str.contains(term))]
-        return self.ModifiedDataFrame
+
+        dropList = list()
+
+        for x in range(len(checkboxList)):
+            if checkboxList[x] == 0:
+                dropList.append(header[x])
+
+        self.ModifiedDataFrame = self.ModifiedDataFrame.drop(columns=dropList)
 
     def GetStatistics(self):
         statisticsDict = dict()
@@ -130,17 +137,6 @@ class Parser():
 
         df["Datum"].value_counts().plot(kind="pie")
         plt.show()
-
-    def FilterColumns(self, checkboxList):
-        dropList = list()
-
-        for x in range(len(checkboxList)):
-            if checkboxList[x] == 0:
-                dropList.append(header[x])
-
-        self.ModifiedDataFrame = self.DataFrame.drop(columns=dropList)
-        
-        return self.ModifiedDataFrame
 
     def SaveDataFrameAsCSV(self, dataFrame, path):
         dataFrame.to_csv(path, index = False, header=True)
