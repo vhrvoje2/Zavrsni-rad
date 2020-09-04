@@ -38,17 +38,19 @@ class Parser():
 
     def CreateDataFrame(self):
         self.DataFrame = pd.DataFrame(self.dataFrameList, columns=header)
+        self.ModifiedDataFrame = self.DataFrame
 
     def ClearData(self):
         self.rawData = list()
         self.parsedData = list()
         self.dataFrameList = list()
         self.DataFrame = None
+        self.ModifiedDataFrame = None
 
     def SearchDataFrame(self, term):
         df = self.DataFrame
-        newDataFrame = df.loc[(df["IP klijenta"].str.contains(term)) | (df["ID korisnika"].str.contains(term)) | (df["Korisničko ime"].str.contains(term)) | (df["Datum i vrijeme"].str.contains(term)) | (df["Metoda i sadržaj"].str.contains(term)) | (df["Veličina u bajtovima"].str.contains(term)) | (df["Referrer"].str.contains(term)) | (df["Korisnički agent"].str.contains(term))]
-        return newDataFrame
+        self.ModifiedDataFrame = df.loc[(df["IP klijenta"].str.contains(term)) | (df["ID korisnika"].str.contains(term)) | (df["Korisničko ime"].str.contains(term)) | (df["Datum i vrijeme"].str.contains(term)) | (df["Metoda i sadržaj"].str.contains(term)) | (df["Veličina u bajtovima"].str.contains(term)) | (df["Referrer"].str.contains(term)) | (df["Korisnički agent"].str.contains(term))]
+        return self.ModifiedDataFrame
 
     def GetStatistics(self):
         statisticsDict = dict()
@@ -67,6 +69,7 @@ class Parser():
     def GetTotalMBytes(self):
         df = self.DataFrame["Veličina u bajtovima"]
         totalBytes = 0
+
         for value in df:
             if value.isdigit():
                 totalBytes += int(value)
@@ -107,7 +110,6 @@ class Parser():
         df["Metoda"].value_counts().plot(kind="barh")
         plt.show()
 
-
     def DisplayByMethod(self):
         df = self.DataFrame
 
@@ -126,9 +128,22 @@ class Parser():
 
         fig.set_size_inches(8, 6)
 
-        df["Datum"].value_counts().plot(kind="barh")
+        df["Datum"].value_counts().plot(kind="pie")
         plt.show()
 
+    def FilterColumns(self, checkboxList):
+        dropList = list()
+
+        for x in range(len(checkboxList)):
+            if checkboxList[x] == 0:
+                dropList.append(header[x])
+
+        self.ModifiedDataFrame = self.DataFrame.drop(columns=dropList)
+        
+        return self.ModifiedDataFrame
+
+    def SaveDataFrameAsCSV(self, dataFrame, path):
+        dataFrame.to_csv(path, index = False, header=True)
 
 #TEST
 if __name__ == "__main__":

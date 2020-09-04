@@ -15,11 +15,9 @@ def LoadFile():
             loadedFileLabel.config(text = splitFilename[len(splitFilename)-1])
             FillDataTable(parser.DataFrame)
             DisplayStatistics()
-            messagebox.showinfo("Uspjeh!", "Datoteka učitana!")
+            messagebox.showinfo("Uspjeh!", "Datoteka uspješno učitana!")
         except:
-            messagebox.showwarning("Greška", "Datoteka nije pronađena!")
-    else:
-        messagebox.showwarning("Greška", "Unesite naziv datoteke!")
+            messagebox.showwarning("Greška", "Dogodila se pogreška! Pokušajte ponovno.")
 
 def ClearDataTable():
     dataTable.delete(*dataTable.get_children())
@@ -38,8 +36,8 @@ def FillDataTable(dataFrame):
 def SearchData():
     term = searchInput.get()
     if len(term) > 0 and len(parser.dataFrameList) > 0:
-        newDataFrame = parser.SearchDataFrame(term)
-        FillDataTable(newDataFrame)
+        parser.SearchDataFrame(term)
+        FillDataTable(parser.ModifiedDataFrame)
 
 def DisplayStatistics():
     statisticsDict = parser.GetStatistics()
@@ -57,19 +55,36 @@ def DisplayStatistics():
 def DisplayGraph():
     graphValues = {
                     "Udio po HTTP odgovoru": 0,
-                    "Udio po metodi": 1,
+                    "Udio po HTTP metodi": 1,
                     "Količina zahtjeva po danu": 2
                 }
+
     if len(parser.dataFrameList) > 0:
         parser.DisplayGraph(graphValues[graphsCombobox.get()])
         window.quit()
 
+def FilterData():
+    checkboxList = [varClientIP.get(),
+                    varClientID.get(),
+                    varUsername.get(),
+                    varDate.get(),
+                    varContent.get(),
+                    varHTTP.get(),
+                    varBytes.get(),
+                    varRef.get(),
+                    varAgent.get()]
+    
+    newDataFrame = parser.FilterColumns(checkboxList)
+    FillDataTable(newDataFrame)
+
 def SaveData():
-    pass
+    if len(parser.ModifiedDataFrame) > 0:
+        path = filedialog.asksaveasfilename(defaultextension='.csv')
+        parser.SaveDataFrameAsCSV(parser.ModifiedDataFrame, path)
+        messagebox.showinfo("Uspjeh!", "Datoteka uspješno kreirana!")
 
 #------------------------------------------------parser------------------------------------------------
 parser = Parser()
-newDataFrame = None
 
 #------------------------------------------------window------------------------------------------------
 window = Tk()
@@ -104,7 +119,7 @@ varAgent = IntVar()
 checkboxesFrame = LabelFrame(window, text="Odabir polja:", height=120, width=600, borderwidth=2, relief="groove")
 checkboxesFrame.place(x=205, y=0)
 
-refreshButton = Button(window, text="Osvježi prikaz")
+refreshButton = Button(window, text="Osvježi prikaz", command=FilterData)
 refreshButton.place(x=310, y=100)
 
 clientIPCheckbox = Checkbutton(checkboxesFrame, text="IP klijenta", variable=varClientIP)
@@ -183,10 +198,10 @@ topIPLabel = Label(statisticsFrame, text="Najčešća IP adresa: /")
 topIPLabel.place(x=5, y=70)
 
 #------------------------------------------------graphs------------------------------------------------
-graphsFrame = LabelFrame(window, text="Grafovi:", height=120, width=257, borderwidth=2, relief="groove")
+graphsFrame = LabelFrame(window, text="Vizualizacija:", height=120, width=257, borderwidth=2, relief="groove")
 graphsFrame.place(x=262, y=140)
 
-comboboxValues = ["Udio po HTTP odgovoru", "Udio po metodi", "Količina zahtjeva po danu"]
+comboboxValues = ["Udio po HTTP odgovoru", "Udio po HTTP metodi", "Količina zahtjeva po danu"]
 graphsCombobox = ttk.Combobox(graphsFrame, values=comboboxValues)
 graphsCombobox.current(0)
 graphsCombobox.place(x=55, y=25)
