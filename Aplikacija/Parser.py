@@ -32,7 +32,7 @@ class Parser():
             self.parsedData.append(line)
 
     def CreateDataFrameList(self):
-        for x in range(len(self.parsedData)-1):
+        for x in range(len(self.parsedData)):
             regexMatch = re.match(regex, self.parsedData[x])
             self.dataFrameList.append(list(regexMatch.groups()))
 
@@ -44,10 +44,100 @@ class Parser():
         self.parsedData = list()
         self.dataFrameList = list()
         self.DataFrame = None
+
+    def SearchDataFrame(self, term):
+        df = self.DataFrame
+        newDataFrame = df.loc[(df["IP klijenta"].str.contains(term)) | (df["ID korisnika"].str.contains(term)) | (df["Korisničko ime"].str.contains(term)) | (df["Datum i vrijeme"].str.contains(term)) | (df["Metoda i sadržaj"].str.contains(term)) | (df["Veličina u bajtovima"].str.contains(term)) | (df["Referrer"].str.contains(term)) | (df["Korisnički agent"].str.contains(term))]
+        return newDataFrame
+
+    def GetStatistics(self):
+        statisticsDict = dict()
+        statisticsDict["records"] = self.GetAmountOfRecords()
+        statisticsDict["mbytes"] = self.GetTotalMBytes()
+        statisticsDict["uniqueIPs"] = self.GetAmountOfUniqueIP()
+        statisticsDict["topIP"] = self.GetTopIP()
+
+        return statisticsDict
+
+    def GetAmountOfRecords(self):
+        df = self.DataFrame
+        
+        return str(len(df.index))
+
+    def GetTotalMBytes(self):
+        df = self.DataFrame["Veličina u bajtovima"]
+        totalBytes = 0
+        for value in df:
+            if value.isdigit():
+                totalBytes += int(value)
+
+        return str(round(totalBytes/1000000, 2))
+
+    def GetAmountOfUniqueIP(self):
+        df = self.DataFrame
+        uniqueIPs = df["IP klijenta"].nunique()
+
+        return str(uniqueIPs)
+
+    def GetTopIP(self):
+        df = self.DataFrame
+        topIP = df["IP klijenta"].value_counts().idxmax()
+        
+        return topIP
+        
+    def DisplayGraph(self, ind):
+        plt.style.use("ggplot")
+
+        if ind == 0:
+            self.DisplayByHTTP()
+        elif ind == 1:
+            self.DisplayByMethod()
+        else:
+            self.DisplayAmountPerDay()
+
+    def DisplayByHTTP(self):
+        df = self.DataFrame
+
+        fig, ax = plt.subplots()
+        splitColumn = df["Metoda i sadržaj"].str.split(" ", expand = True)
+        df["Metoda"] = splitColumn[0]
+
+        fig.set_size_inches(8, 6)
+
+        df["Metoda"].value_counts().plot(kind="barh")
+        plt.show()
+
+
+    def DisplayByMethod(self):
+        df = self.DataFrame
+
+        fig, ax = plt.subplots()
+
+        fig.set_size_inches(8, 6)
+        df["HTTP kod odgovora"].value_counts().plot(kind="bar")
+        plt.show()
+
+    def DisplayAmountPerDay(self):
+        df = self.DataFrame
+        
+        fig, ax = plt.subplots()
+        splitColumn = df["Datum i vrijeme"].str.split(":", expand = True)        
+        df["Datum"] = splitColumn[0] 
+
+        fig.set_size_inches(8, 6)
+
+        df["Datum"].value_counts().plot(kind="barh")
+        plt.show()
+
+
 #TEST
 if __name__ == "__main__":
     mojParser = Parser()
     mojParser.SetFilename("access-log.txt")
-    df = mojParser.DataFrame.drop(columns=["IP klijenta", "ID korisnika", "Korisničko ime", "Datum i vrijeme", "Metoda i sadržaj", "Veličina u bajtovima", "Referrer", "Korisnički agent"])
-    df = df.groupby(by="HTTP kod odgovora").size()
-    print(df)
+    #mojParser.SetFilename("test-log.txt")
+    df = mojParser.DataFrame
+    #df = mojParser.DataFrame.drop(columns=["IP klijenta", "ID korisnika", "Korisničko ime", "Datum i vrijeme", "Metoda i sadržaj", "Veličina u bajtovima", "Referrer", "Korisnički agent"])
+    #df = df.groupby(by="HTTP kod odgovora").size()
+    #term = "140"
+    #print(df.groupby(by="IP klijenta").agg({"IP klijenta": "nunique"}))
+    mojParser.DisplayAmountPerDay()

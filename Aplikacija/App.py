@@ -1,59 +1,94 @@
-from tkinter import Tk, ttk, Button, Label, Entry, messagebox, Checkbutton, Frame, LabelFrame, Scrollbar, END, IntVar
+from tkinter import Tk, ttk, Button, Label, Entry, messagebox, Checkbutton, LabelFrame, Scrollbar, filedialog, END, IntVar
 from Parser import Parser
 from datetime import date
+import os
 
-def loadFile():
-    #filename = filenameInput.get()
-    filename = "access-log.txt"
-    filenameInput.delete(0, END)
+def LoadFile():
+    path = os.getcwd()
+    filename = filedialog.askopenfilename(initialdir=path, title="Odaberite datoteku", filetypes=[("Text files","*.txt")])
+    
     if len(filename) > 0:
         try:
             parser.ClearData()
             parser.SetFilename(filename)
+            splitFilename = filename.split("/")
+            loadedFileLabel.config(text = splitFilename[len(splitFilename)-1])
+            FillDataTable(parser.DataFrame)
+            DisplayStatistics()
             messagebox.showinfo("Uspjeh!", "Datoteka učitana!")
-            loadedFileLabel.config(text = filename, foreground="red")
-            fillDataTable()
         except:
             messagebox.showwarning("Greška", "Datoteka nije pronađena!")
     else:
         messagebox.showwarning("Greška", "Unesite naziv datoteke!")
 
-def clearTable():
+def ClearDataTable():
     dataTable.delete(*dataTable.get_children())
 
-def fillDataTable():
-    clearTable()
-    dataTable["column"] = list(parser.DataFrame.columns)
+def FillDataTable(dataFrame):
+    ClearDataTable()
+    dataTable["column"] = list(dataFrame.columns)
     dataTable["show"] = "headings"
     for column in dataTable["columns"]:
         dataTable.heading(column, text=column)
 
-    dataFrameRows = parser.DataFrame.to_numpy().tolist() # turns the dataframe into a list of lists
+    dataFrameRows = dataFrame.to_numpy().tolist()
     for row in dataFrameRows:
         dataTable.insert("", "end", values=row)
 
+def SearchData():
+    term = searchInput.get()
+    if len(term) > 0 and len(parser.dataFrameList) > 0:
+        newDataFrame = parser.SearchDataFrame(term)
+        FillDataTable(newDataFrame)
+
+def DisplayStatistics():
+    statisticsDict = parser.GetStatistics()
+
+    recordsText = "Broj zapisa: " + statisticsDict["records"]
+    megabytesText = "Ukupna količina prijenosa: " + statisticsDict["mbytes"] + " MB"
+    uniqueText = "Broj jedinstvenih IP adresa: " + statisticsDict["uniqueIPs"]
+    topText = "Najčešća IP adresa: " + statisticsDict["topIP"]
+
+    amountOfRecordsLabel.config(text=recordsText)
+    megabytesLabel.config(text=megabytesText)
+    uniqueIPsLabel.config(text=uniqueText)
+    topIPLabel.config(text=topText)
+
+def DisplayGraph():
+    graphValues = {
+                    "Udio po HTTP odgovoru": 0,
+                    "Udio po metodi": 1,
+                    "Količina zahtjeva po danu": 2
+                }
+    if len(parser.dataFrameList) > 0:
+        parser.DisplayGraph(graphValues[graphsCombobox.get()])
+        window.quit()
+
+def SaveData():
+    pass
+
 #------------------------------------------------parser------------------------------------------------
 parser = Parser()
+newDataFrame = None
 
 #------------------------------------------------window------------------------------------------------
 window = Tk()
-window.geometry("1200x800")
+window.geometry("1200x800+250+50")
 window.resizable(0, 0)
 window.title("Log parser")
-#window.pack_propagate(False)
 
 #----------------------------------------------fileselect----------------------------------------------
-filenameLabel = Label(window, text="Naziv datoteke:")
-filenameLabel.place(x=10, y=0)
+fileFrame = LabelFrame(window, text="Odabir datoteke:", height=94, width=200, borderwidth=2, relief="groove")
+fileFrame.place(x=5, y=0)
 
-loadedFileLabel = Label(window, text="")
-loadedFileLabel.place(x=95, y=0)
+filenameLabel = Label(fileFrame, text="Naziv datoteke:")
+filenameLabel.place(x=10, y=5)
 
-filenameInput = Entry(window, width=20, highlightcolor="red", highlightthickness=1)
-filenameInput.place(x=10, y=25)
+loadedFileLabel = Label(fileFrame, text="/", foreground="red")
+loadedFileLabel.place(x=95, y=5)
 
-filenameButton = Button(window, text="Učitaj datoteku", command=loadFile)
-filenameButton.place(x=10, y=50)
+filenameButton = Button(fileFrame, text="Učitaj datoteku", command=LoadFile)
+filenameButton.place(x=50, y=35)
 
 #----------------------------------------------checkboxes----------------------------------------------
 varClientIP = IntVar()
@@ -66,11 +101,11 @@ varBytes = IntVar()
 varRef = IntVar()
 varAgent = IntVar()
 
-checkboxesFrame = Frame(window, height=120, width=600, borderwidth=2, relief="groove")
-checkboxesFrame.place(x=200, y=0)
+checkboxesFrame = LabelFrame(window, text="Odabir polja:", height=120, width=600, borderwidth=2, relief="groove")
+checkboxesFrame.place(x=205, y=0)
 
 refreshButton = Button(window, text="Osvježi prikaz")
-refreshButton.place(x=310, y=85)
+refreshButton.place(x=310, y=100)
 
 clientIPCheckbox = Checkbutton(checkboxesFrame, text="IP klijenta", variable=varClientIP)
 clientIPCheckbox.grid(row=0, column=0)
@@ -115,7 +150,7 @@ searchLabel.place(x=10, y=330)
 searchInput = Entry(window, width=20, highlightcolor="red", highlightthickness=1)
 searchInput.place(x=65, y=330)
 
-searchButton = Button(window, text="Pretraži")
+searchButton = Button(window, text="Pretraži", command=SearchData)
 searchButton.place(x=200, y=327)
 
 #-----------------------------------------------datatable----------------------------------------------
@@ -130,6 +165,38 @@ dataTableBarY = Scrollbar(dataFrame, orient="vertical", command=dataTable.yview)
 dataTable.configure(xscrollcommand=dataTableBarX.set, yscrollcommand=dataTableBarY.set)
 dataTableBarX.pack(side="bottom", fill="x")
 dataTableBarY.pack(side="right", fill="y")
+
+#----------------------------------------------statistics----------------------------------------------
+statisticsFrame = LabelFrame(window, text="Statistika:", height=120, width=257, borderwidth=2, relief="groove")
+statisticsFrame.place(x=5, y=140)
+
+amountOfRecordsLabel = Label(statisticsFrame, text="Broj zapisa: /")
+amountOfRecordsLabel.place(x=5, y=10)
+
+megabytesLabel = Label(statisticsFrame, text="Ukupna količina prijenosa: /")
+megabytesLabel.place(x=5, y=30)
+
+uniqueIPsLabel = Label(statisticsFrame, text="Broj jedinstvenih IP adresa: /")
+uniqueIPsLabel.place(x=5, y=50)
+
+topIPLabel = Label(statisticsFrame, text="Najčešća IP adresa: /")
+topIPLabel.place(x=5, y=70)
+
+#------------------------------------------------graphs------------------------------------------------
+graphsFrame = LabelFrame(window, text="Grafovi:", height=120, width=257, borderwidth=2, relief="groove")
+graphsFrame.place(x=262, y=140)
+
+comboboxValues = ["Udio po HTTP odgovoru", "Udio po metodi", "Količina zahtjeva po danu"]
+graphsCombobox = ttk.Combobox(graphsFrame, values=comboboxValues)
+graphsCombobox.current(0)
+graphsCombobox.place(x=55, y=25)
+
+graphsButton = Button(graphsFrame, text="Generiraj graf", command=DisplayGraph)
+graphsButton.place(x=85, y= 55)
+
+#-------------------------------------------------save-------------------------------------------------
+quitButton = Button(window, text="Spremi podatke", command=SaveData)
+quitButton.place(x=1010, y=770)
 
 #-------------------------------------------------quit-------------------------------------------------
 quitButton = Button(window, text="Izlaz", width=10, command=window.quit)
