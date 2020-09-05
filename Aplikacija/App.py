@@ -66,26 +66,13 @@ def DisplayGraph():
     graphValues = {
                     "Udio po HTTP odgovoru": 0,
                     "Udio po HTTP metodi": 1,
-                    "Količina zahtjeva po danu": 2
+                    "Top 5 po broju zahtjeva": 2,
+                    "Količina zahtjeva po danu": 3
                 }
 
     if len(parser.dataFrameList) > 0:
         parser.DisplayGraph(graphValues[graphsCombobox.get()])
         window.quit()
-
-""" def FilterData():
-    checkboxList = [varClientIP.get(),
-                    varClientID.get(),
-                    varUsername.get(),
-                    varDate.get(),
-                    varContent.get(),
-                    varHTTP.get(),
-                    varBytes.get(),
-                    varRef.get(),
-                    varAgent.get()]
-    
-    newDataFrame = parser.FilterColumns(checkboxList)
-    FillDataTable(newDataFrame) """
 
 def SaveData():
     if len(parser.ModifiedDataFrame) > 0:
@@ -231,7 +218,7 @@ topIPLabel.place(x=5, y=70)
 graphsFrame = LabelFrame(window, text="Vizualizacija:", height=120, width=257, borderwidth=2, relief="groove")
 graphsFrame.place(x=262, y=140)
 
-comboboxValues = ["Udio po HTTP odgovoru", "Udio po HTTP metodi", "Količina zahtjeva po danu"]
+comboboxValues = ["Udio po HTTP odgovoru", "Udio po HTTP metodi", "Top 5 po broju zahtjeva", "Količina zahtjeva po danu"]
 graphsCombobox = ttk.Combobox(graphsFrame, values=comboboxValues)
 graphsCombobox.current(0)
 graphsCombobox.place(x=55, y=25)

@@ -1,6 +1,7 @@
 import re
 import pandas as pd
 import matplotlib.pyplot as plt
+import copy
 
 regex = r"([(\d\.)]+) (.*) (.*) \[(.*?)\] \"(.*?)\" (\d+) (\d+|.*) \"(.*)\" \"(.*)\""
 header = ["IP klijenta", "ID korisnika", "Korisničko ime", "Datum i vrijeme", "Metoda i sadržaj", "HTTP kod odgovora", "Veličina u bajtovima", "Referrer", "Korisnički agent"]
@@ -99,56 +100,64 @@ class Parser():
         plt.style.use("ggplot")
 
         if ind == 0:
-            self.DisplayByHTTP()
+            self.DisplayByHTTPResponse()
         elif ind == 1:
             self.DisplayByMethod()
+        elif ind == 2:
+            self.DisplayTopRequestIPs()
         else:
             self.DisplayAmountPerDay()
 
-    def DisplayByHTTP(self):
-        df = self.DataFrame
+    def DisplayByMethod(self):
+        df = copy.deepcopy(self.DataFrame)
 
         fig, ax = plt.subplots()
         splitColumn = df["Metoda i sadržaj"].str.split(" ", expand = True)
         df["Metoda"] = splitColumn[0]
 
-        fig.set_size_inches(8, 6)
+        fig.set_size_inches(8, 7)
+        fig.suptitle("Podjela zahtjeva po korištenoj HTTP metodi")
+        ax.set_xlabel("Broj zahtjeva")
 
         df["Metoda"].value_counts().plot(kind="barh")
         plt.show()
 
-    def DisplayByMethod(self):
-        df = self.DataFrame
+    def DisplayByHTTPResponse(self):
+        df = copy.deepcopy(self.DataFrame)
 
         fig, ax = plt.subplots()
 
-        fig.set_size_inches(8, 6)
+        fig.set_size_inches(8, 7)
+        fig.suptitle("Podjela zahtjeva po HTTP kodu odgovora")
+        ax.set_xlabel("HTTP statusni kod")
+
         df["HTTP kod odgovora"].value_counts().plot(kind="bar")
         plt.show()
 
     def DisplayAmountPerDay(self):
-        df = self.DataFrame
+        df = copy.deepcopy(self.DataFrame)
         
         fig, ax = plt.subplots()
         splitColumn = df["Datum i vrijeme"].str.split(":", expand = True)        
         df["Datum"] = splitColumn[0] 
 
-        fig.set_size_inches(8, 6)
+        fig.set_size_inches(8, 7)
+        fig.suptitle("Količina zahtjeva po danu")
 
         df["Datum"].value_counts().plot(kind="pie")
         plt.show()
 
+    def DisplayTopRequestIPs(self):
+        df = copy.deepcopy(self.DataFrame)
+
+        fig, ax = plt.subplots()
+        df = df["IP klijenta"].value_counts(ascending=False).head(5)
+
+        fig.set_size_inches(10, 7)
+        fig.suptitle("Top 5 IP adresa po broju zahtjeva")
+
+        df.plot(kind="barh")
+        plt.show()
+
     def SaveDataFrameAsCSV(self, dataFrame, path):
         dataFrame.to_csv(path, index = False, header=True)
-
-#TEST
-if __name__ == "__main__":
-    mojParser = Parser()
-    mojParser.SetFilename("access-log.txt")
-    #mojParser.SetFilename("test-log.txt")
-    df = mojParser.DataFrame
-    #df = mojParser.DataFrame.drop(columns=["IP klijenta", "ID korisnika", "Korisničko ime", "Datum i vrijeme", "Metoda i sadržaj", "Veličina u bajtovima", "Referrer", "Korisnički agent"])
-    #df = df.groupby(by="HTTP kod odgovora").size()
-    #term = "140"
-    #print(df.groupby(by="IP klijenta").agg({"IP klijenta": "nunique"}))
-    mojParser.DisplayAmountPerDay()
