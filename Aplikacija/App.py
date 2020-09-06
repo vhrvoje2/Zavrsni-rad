@@ -1,6 +1,5 @@
 from tkinter import Tk, ttk, Button, Label, Entry, messagebox, Checkbutton, LabelFrame, Scrollbar, filedialog, END, IntVar
 from Parser import Parser
-from datetime import date
 import os
 
 def LoadFile():
@@ -76,7 +75,7 @@ def DisplayGraph():
 
 def SaveData():
     if len(parser.ModifiedDataFrame) > 0:
-        path = filedialog.asksaveasfilename(defaultextension='.csv')
+        path = filedialog.asksaveasfilename(defaultextension=".csv")
         parser.SaveDataFrameAsCSV(parser.ModifiedDataFrame, path)
         messagebox.showinfo("Uspjeh!", "Datoteka uspješno kreirana!")
 
@@ -132,42 +131,39 @@ varAgent = IntVar()
 checkboxesFrame = LabelFrame(window, text="Odabir polja:", height=120, width=600, borderwidth=2, relief="groove")
 checkboxesFrame.place(x=205, y=0)
 
-refreshButton = Button(window, text="Osvježi prikaz", command=SearchAndFilter)
-refreshButton.place(x=310, y=100)
-
-clientIPCheckbox = Checkbutton(checkboxesFrame, text="IP klijenta", variable=varClientIP)
+clientIPCheckbox = Checkbutton(checkboxesFrame, text="IP klijenta", variable=varClientIP, command=SearchAndFilter)
 clientIPCheckbox.grid(row=0, column=0)
 clientIPCheckbox.select()
 
-clientIDCheckbox = Checkbutton(checkboxesFrame, text="ID korisnika", variable=varClientID)
+clientIDCheckbox = Checkbutton(checkboxesFrame, text="ID korisnika", variable=varClientID, command=SearchAndFilter)
 clientIDCheckbox.grid(row=1, column=0)
 clientIDCheckbox.select()
 
-usernameCheckbox = Checkbutton(checkboxesFrame, text="Korisničko ime", variable=varUsername)
+usernameCheckbox = Checkbutton(checkboxesFrame, text="Korisničko ime", variable=varUsername, command=SearchAndFilter)
 usernameCheckbox.grid(row=2, column=0)
 usernameCheckbox.select()
 
-dateCheckbox = Checkbutton(checkboxesFrame, text="Datum", variable=varDate)
+dateCheckbox = Checkbutton(checkboxesFrame, text="Datum", variable=varDate, command=SearchAndFilter)
 dateCheckbox.grid(row=0, column=1)
 dateCheckbox.select()
 
-contentCheckbox = Checkbutton(checkboxesFrame, text="Sadržaj", variable=varContent)
+contentCheckbox = Checkbutton(checkboxesFrame, text="Sadržaj", variable=varContent, command=SearchAndFilter)
 contentCheckbox.grid(row=1, column=1)
 contentCheckbox.select()
 
-httpCheckbox = Checkbutton(checkboxesFrame, text="HTTP status", variable=varHTTP)
+httpCheckbox = Checkbutton(checkboxesFrame, text="HTTP status", variable=varHTTP, command=SearchAndFilter)
 httpCheckbox.grid(row=2, column=1)
 httpCheckbox.select()
 
-bytesCheckbox = Checkbutton(checkboxesFrame, text="Količina bajtova", variable=varBytes)
+bytesCheckbox = Checkbutton(checkboxesFrame, text="Količina bajtova", variable=varBytes, command=SearchAndFilter)
 bytesCheckbox.grid(row=0, column=2)
 bytesCheckbox.select()
 
-refCheckbox = Checkbutton(checkboxesFrame, text="Refereer", variable=varRef)
+refCheckbox = Checkbutton(checkboxesFrame, text="Refereer", variable=varRef, command=SearchAndFilter)
 refCheckbox.grid(row=1, column=2)
 refCheckbox.select()
 
-agentCheckbox = Checkbutton(checkboxesFrame, text="Agent", variable=varAgent)
+agentCheckbox = Checkbutton(checkboxesFrame, text="Agent", variable=varAgent, command=SearchAndFilter)
 agentCheckbox.grid(row=2, column=2)
 agentCheckbox.select()
 
