@@ -70,13 +70,27 @@ def DisplayGraph():
                 }
 
     if len(parser.dataFrameList) > 0:
-        parser.DisplayGraph(graphValues[graphsCombobox.get()])
-        window.quit()
+        selectedGraphID = graphValues[graphsCombobox.get()]
+
+        if selectedGraphID == 0 and varHTTP.get() == 1:
+            parser.DisplayGraph(selectedGraphID)
+            window.quit()
+        elif selectedGraphID == 1 and varContent.get() == 1:
+            parser.DisplayGraph(selectedGraphID)
+            window.quit()
+        elif selectedGraphID == 2 and varClientIP.get() == 1:
+            parser.DisplayGraph(selectedGraphID)
+            window.quit()
+        elif selectedGraphID == 3 and varDate.get() == 1:
+            parser.DisplayGraph(selectedGraphID)
+            window.quit()
+        else:
+            messagebox.showwarning("Greška", "Za odabrane podatke nije moguć prikaz grafa!")
 
 def SaveData():
     if len(parser.ModifiedDataFrame) > 0:
         path = filedialog.asksaveasfilename(defaultextension=".csv")
-        parser.SaveDataFrameAsCSV(parser.ModifiedDataFrame, path)
+        parser.SaveDataFrameAsCSV(path)
         messagebox.showinfo("Uspjeh!", "Datoteka uspješno kreirana!")
 
 def ResetUI():

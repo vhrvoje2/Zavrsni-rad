@@ -109,8 +109,8 @@ class Parser():
             self.DisplayAmountPerDay()
 
     def DisplayByMethod(self):
-        df = copy.deepcopy(self.DataFrame)
-
+        df = copy.deepcopy(self.ModifiedDataFrame)
+        
         fig, ax = plt.subplots()
         splitColumn = df["Metoda i sadržaj"].str.split(" ", expand = True)
         df["Metoda"] = splitColumn[0]
@@ -123,7 +123,7 @@ class Parser():
         plt.show()
 
     def DisplayByHTTPResponse(self):
-        df = copy.deepcopy(self.DataFrame)
+        df = copy.deepcopy(self.ModifiedDataFrame)
 
         fig, ax = plt.subplots()
 
@@ -135,7 +135,7 @@ class Parser():
         plt.show()
 
     def DisplayAmountPerDay(self):
-        df = copy.deepcopy(self.DataFrame)
+        df = copy.deepcopy(self.ModifiedDataFrame)
         
         fig, ax = plt.subplots()
         splitColumn = df["Datum i vrijeme"].str.split(":", expand = True)        
@@ -148,16 +148,16 @@ class Parser():
         plt.show()
 
     def DisplayTopRequestIPs(self):
-        df = copy.deepcopy(self.DataFrame)
+        df = copy.deepcopy(self.ModifiedDataFrame)
 
         fig, ax = plt.subplots()
         df = df["IP klijenta"].value_counts(ascending=False).head(5)
 
-        fig.set_size_inches(10, 7)
+        fig.set_size_inches(11, 7)
         fig.suptitle("Top 5 IP adresa po broju zahtjeva")
 
         df.plot(kind="barh")
         plt.show()
 
     def SaveDataFrameAsCSV(self, dataFrame, path):
-        dataFrame.to_csv(path, index = False, header=True)
+        self.ModifiedDataFrame.to_csv(path, index = False, header=True)
