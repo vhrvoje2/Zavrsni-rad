@@ -159,5 +159,5 @@ class Parser():
         df.plot(kind="barh")
         plt.show()
 
-    def SaveDataFrameAsCSV(self, dataFrame, path):
+    def SaveDataFrameAsCSV(self, path):
         self.ModifiedDataFrame.to_csv(path, index = False, header=True)
